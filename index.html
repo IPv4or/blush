@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Blender</title>
+    <title>blush</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter -->
@@ -57,6 +57,12 @@
             height: auto;
             display: block;
         }
+        #loading-indicator {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #555;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -64,8 +70,8 @@
     <div class="container mx-auto p-4 md:p-8 text-center">
 
         <header class="mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Image Blender</h1>
-            <p class="text-lg text-gray-600 mt-2">Upload your picture to add a creative touch!</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">blush</h1>
+            <p class="text-lg text-gray-600 mt-2">JUNE 2025</p>
         </header>
 
         <!-- File Uploader -->
@@ -73,6 +79,8 @@
             <button class="btn">Choose an Image</button>
             <input type="file" id="imageLoader" name="filename" accept="image/png, image/jpeg, image/gif">
         </div>
+        
+        <div id="loading-indicator">Processing image...</div>
 
         <!-- Canvas and Download Link Container -->
         <div id="canvas-container">
@@ -84,57 +92,80 @@
                 Download Image
             </a>
         </div>
-        
+
     </div>
 
     <script>
+        // --- DOM Element Selection ---
         const imageLoader = document.getElementById('imageLoader');
         const canvas = document.getElementById('imageCanvas');
         const ctx = canvas.getContext('2d');
         const downloadLnk = document.getElementById('downloadLnk');
         const canvasContainer = document.getElementById('canvas-container');
         const downloadContainer = document.getElementById('download-container');
-        
-        // Base64 encoded blush.png is stored directly in a constant
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // --- Base64 Encoded Logo ---
         const blushLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAbFBMVEUiAAD////d3d0fAADl5eUeAADz8/MhAADg4OAaAADt7e0TAADk5OQZAADZ2dkQAADW1tYMAADR0dEJAADJyckGAADExMQAwMDAAAAFAAD////+/v4BAACsrKxubm5LS0tCQkIAACOUlJRERERAQEB4eHhiYmJ+fn5paWlYWFhQUFB9x0BlAAAAAXRSTlMAQObYZgAAAwVJREFUeNrt3G1TwkAYB/CUWqK2QrGgKKjYirVoUVx7/1d0JCEDyEAmc/LOl/eE/2nCZCbdBSgAAAAAAAAAAAAAAAAAAAAAAAAAAMAvpGz52BH3JCKPz7i+9e85G/r+Z+w/iYh7kLzE9yQij99Z+0+S3v/ZGBWpG5Nf5+Z5D3I+u/dNk+4/M/+YZyLy+MvYPybZ/zP2n0lE3I8Uf7P+n4nIo+82Iu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+w8iIu5H8lH7jyT+bTb2j0n3n9k/IuL+M/afSWf9n7F/JJH3M/afSeqv/Xl/8+T+WbL5WjH3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPjVX/4aBCTN1G15AAAAAElFTkSuQmCC';
 
-        // Listener for the file input
+        // --- Event Listener ---
         imageLoader.addEventListener('change', handleImage, false);
 
+        /**
+         * A robust function to load an image source.
+         * Returns a Promise that resolves with the loaded Image object.
+         */
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = (err) => reject(err);
+                img.src = src;
+            });
+        }
+
+        /**
+         * Handles the file input change event.
+         */
         function handleImage(e) {
-            // Ensure a file was selected
-            if (!e.target.files || !e.target.files[0]) {
-                return;
+            const file = e.target.files[0];
+            if (!file) {
+                return; // Exit if no file is selected
             }
+
+            loadingIndicator.style.display = 'block'; // Show loading indicator
+            canvasContainer.style.display = 'none';
+            downloadContainer.style.display = 'none';
+
 
             const reader = new FileReader();
             
-            // This event fires when the file is read into memory
+            // This runs after the file has been read into memory
             reader.onload = function(event) {
-                const userImage = new Image();
-                
-                // This event fires when the user's image has been loaded
-                userImage.onload = function() {
-                    // Now that the user's image is loaded, create and load the logo
-                    const logoImage = new Image();
+                const userImageSrc = event.target.result;
 
-                    // This event fires when the logo image has been loaded
-                    logoImage.onload = function() {
-                        // CRITICAL: Both images are now fully loaded and ready.
-                        // We can now safely draw everything to the canvas.
-                        drawCanvas(userImage, logoImage);
-                    };
-                    // Set the source for the logo to start loading it
-                    logoImage.src = blushLogoSrc;
-                };
-                // Set the source for the user image to start loading it
-                userImage.src = event.target.result;
-            }
+                // Use Promise.all to wait for BOTH images to load before proceeding
+                Promise.all([
+                    loadImage(userImageSrc),
+                    loadImage(blushLogoSrc)
+                ])
+                .then(([userImage, logoImage]) => {
+                    // This block runs ONLY when both images are fully loaded
+                    drawCanvas(userImage, logoImage);
+                })
+                .catch(error => {
+                    console.error("Error loading one of the images:", error);
+                    loadingIndicator.innerText = 'Sorry, there was an error loading the image.';
+                });
+            };
             
-            // Start reading the user's selected file
-            reader.readAsDataURL(e.target.files[0]);
+            // Start reading the selected file
+            reader.readAsDataURL(file);
         }
         
+        /**
+         * Draws everything onto the canvas.
+         */
         function drawCanvas(userImage, logoImage) {
             // Set canvas dimensions to match the user's uploaded image
             canvas.width = userImage.width;
@@ -151,30 +182,27 @@
             const complementaryColor = getComplementaryColor(avgColor.r, avgColor.g, avgColor.b);
             
             // --- Draw Blush Logo ---
-            // Scale logo to be 20% of the image width
             const logoWidth = canvas.width * 0.2;
-            const logoHeight = logoImage.height * (logoWidth / logoImage.width); // maintain aspect ratio
-            const logoX = canvas.width - logoWidth - (canvas.width * 0.05); // 5% margin from right
-            const logoY = canvas.height - logoHeight - (canvas.height * 0.05); // 5% margin from bottom
+            const logoHeight = logoImage.height * (logoWidth / logoImage.width);
+            const logoX = canvas.width - logoWidth - (canvas.width * 0.05);
+            const logoY = canvas.height - logoHeight - (canvas.height * 0.05);
             ctx.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight);
 
             // --- Draw "JUNE 2025" Text ---
-            ctx.fillStyle = '#FFFFFF'; // White color for the date
-            ctx.font = `bold ${canvas.width * 0.04}px Arial`; // Font size relative to image width
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `bold ${canvas.width * 0.04}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
-            // Add a subtle shadow for better readability
             ctx.shadowColor = 'rgba(0,0,0,0.7)';
             ctx.shadowBlur = 10;
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
-            
-            const textY = canvas.height * 0.05; // 5% from top
+            const textY = canvas.height * 0.05;
             ctx.fillText("JUNE 2025", canvas.width / 2, textY);
             
-             // --- Draw "blush" Text with complementary color ---
+            // --- Draw "blush" Text with complementary color ---
             ctx.fillStyle = complementaryColor; 
-            ctx.font = `bold ${canvas.width * 0.05}px Arial`; // Font size relative to image width
+            ctx.font = `bold ${canvas.width * 0.05}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
             // Reset shadow before drawing this text
@@ -182,38 +210,33 @@
             ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
-            const textYBlush = canvas.height - (canvas.height * 0.05); // 5% from bottom
+            const textYBlush = canvas.height - (canvas.height * 0.05);
             ctx.fillText("blush", canvas.width / 2, textYBlush);
 
-
-            // Reset shadow for any subsequent drawings
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            
-            // Make canvas and download link visible
+            // --- Finalize ---
+            loadingIndicator.style.display = 'none'; // Hide loading indicator
             canvasContainer.style.display = 'block';
             downloadContainer.style.display = 'block';
-            
-            // Set download link
             downloadLnk.href = canvas.toDataURL('image/png');
         }
         
+        /**
+         * Calculates the average color of an image.
+         */
         function getAverageColor(img) {
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
-            // Make temp canvas tiny to get a good average color
             tempCanvas.width = 1;
             tempCanvas.height = 1;
             tempCtx.drawImage(img, 0, 0, 1, 1);
-            
             const data = tempCtx.getImageData(0, 0, 1, 1).data;
             return { r: data[0], g: data[1], b: data[2] };
         }
 
+        /**
+         * Calculates a simple complementary color.
+         */
         function getComplementaryColor(r, g, b) {
-            // Simple inversion for complementary color
             return `rgb(${255 - r}, ${255 - g}, ${255 - b})`;
         }
 
