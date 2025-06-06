@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>blush</title>
-    <!-- Tailwind CSS for styling -->
+    <title>blush - JUNE 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles */
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark background */
+            color: #F3F4F6;
         }
         .upload-btn-wrapper {
             position: relative;
@@ -21,19 +18,19 @@
             display: inline-block;
         }
         .btn {
-            border: 2px solid #4a90e2;
-            color: #4a90e2;
-            background-color: white;
+            border: 2px solid #38BDF8;
+            color: #F3F4F6;
+            background-color: transparent;
             padding: 12px 24px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .upload-btn-wrapper:hover .btn {
-            background-color: #4a90e2;
-            color: white;
+        .btn:hover {
+            background-color: #38BDF8;
+            color: #111827;
         }
         .upload-btn-wrapper input[type=file] {
             font-size: 100px;
@@ -43,56 +40,57 @@
             opacity: 0;
             cursor: pointer;
         }
-        #canvas-container {
-            width: 100%;
-            max-width: 800px;
-            margin: 20px auto;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            display: none; /* Initially hidden */
-        }
         canvas {
-            width: 100%;
-            height: auto;
-            display: block;
+            border-radius: 8px;
+            background-color: #1F2937; /* Slightly lighter than body */
+            border: 1px solid #374151;
         }
-        #loading-indicator {
-            display: none; /* Hidden by default */
-            margin-top: 20px;
-            font-size: 1.2rem;
-            color: #555;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="antialiased">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div class="w-full max-w-2xl text-center">
+            
+            <!-- Header -->
+            <header class="mb-8">
+                <img src="https://storage.googleapis.com/gemini-prod-us-west1-assets/d92f827f-8cd5-48b2-b532-5647ed0b0131" alt="blush logo" class="w-48 h-auto mx-auto mb-4">
+                <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-white">JUNE 2025</h1>
+                <p class="mt-4 text-lg text-gray-400">Create your own poster for the release.</p>
+            </header>
 
-    <div class="container mx-auto p-4 md:p-8 text-center">
+            <!-- Interactive Section -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full">
+                <!-- File Uploader -->
+                <div class="upload-btn-wrapper mb-6">
+                    <button class="btn" id="upload-label">Upload an Image (PNG/JPEG)</button>
+                    <input type="file" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
+                </div>
 
-        <header class="mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">blush</h1>
-            <p class="text-lg text-gray-600 mt-2">JUNE 2025</p>
-        </header>
+                <!-- Canvas for Image Manipulation -->
+                <p id="instruction" class="text-gray-500 mb-4">Your creation will appear here.</p>
+                <canvas id="imageCanvas" class="w-full h-auto"></canvas>
 
-        <!-- File Uploader -->
-        <div class="upload-btn-wrapper">
-            <button class="btn">Choose an Image</button>
-            <input type="file" id="imageLoader" name="filename" accept="image/png, image/jpeg, image/gif">
+                <!-- Download Button -->
+                <div id="downloadContainer" class="mt-6 hidden">
+                    <button id="downloadBtn" class="btn w-full sm:w-auto">Download Masterpiece</button>
+                </div>
+                
+                 <!-- Error Message Box -->
+                <div id="error-box" class="hidden mt-4 bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg relative" role="alert">
+                    <strong class="font-bold">Error:</strong>
+                    <span class="block sm:inline" id="error-message"></span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-12 text-gray-500">
+                <p>&copy; 2025 BLUSH. All rights reserved.</p>
+            </footer>
+
         </div>
-        
-        <div id="loading-indicator">Processing image...</div>
-
-        <!-- Canvas and Download Link Container -->
-        <div id="canvas-container">
-            <canvas id="imageCanvas"></canvas>
-        </div>
-        
-        <div id="download-container" class="mt-6" style="display: none;">
-             <a id="downloadLnk" download="blush-image.png" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg">
-                Download Image
-            </a>
-        </div>
-
     </div>
 
     <script>
@@ -100,144 +98,139 @@
         const imageLoader = document.getElementById('imageLoader');
         const canvas = document.getElementById('imageCanvas');
         const ctx = canvas.getContext('2d');
-        const downloadLnk = document.getElementById('downloadLnk');
-        const canvasContainer = document.getElementById('canvas-container');
-        const downloadContainer = document.getElementById('download-container');
-        const loadingIndicator = document.getElementById('loading-indicator');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadContainer = document.getElementById('downloadContainer');
+        const instruction = document.getElementById('instruction');
+        const errorBox = document.getElementById('error-box');
+        const errorMessage = document.getElementById('error-message');
 
-        // --- Base64 Encoded Logo ---
-        const blushLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAbFBMVEUiAAD////d3d0fAADl5eUeAADz8/MhAADg4OAaAADt7e0TAADk5OQZAADZ2dkQAADW1tYMAADR0dEJAADJyckGAADExMQAwMDAAAAFAAD////+/v4BAACsrKxubm5LS0tCQkIAACOUlJRERERAQEB4eHhiYmJ+fn5paWlYWFhQUFB9x0BlAAAAAXRSTlMAQObYZgAAAwVJREFUeNrt3G1TwkAYB/CUWqK2QrGgKKjYirVoUVx7/1d0JCEDyEAmc/LOl/eE/2nCZCbdBSgAAAAAAAAAAAAAAAAAAAAAAAAAAMAvpGz52BH3JCKPz7i+9e85G/r+Z+w/iYh7kLzE9yQij99Z+0+S3v/ZGBWpG5Nf5+Z5D3I+u/dNk+4/M/+YZyLy+MvYPybZ/zP2n0lE3I8Uf7P+n4nIo+82Iu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+w8iIu5H8lH7jyT+bTb2j0n3n9k/IuL+M/afSWf9n7F/JJH3M/afSeqv/Xl/8+T+WbL5WjH3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPjVX/4aBCTN1G15AAAAAElFTkSuQmCC';
+        // --- Load the 'blush' logo ---
+        const blushLogo = new Image();
+        // This is the provided logo file.
+        blushLogo.src = 'https://storage.googleapis.com/gemini-prod-us-west1-assets/d92f827f-8cd5-48b2-b532-5647ed0b0131'; 
+        blushLogo.crossOrigin = "Anonymous"; // Required for drawing images from other domains onto canvas
 
-        // --- Event Listener ---
-        imageLoader.addEventListener('change', handleImage, false);
-
-        /**
-         * A robust function to load an image source.
-         * Returns a Promise that resolves with the loaded Image object.
-         */
-        function loadImage(src) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.onerror = (err) => reject(err);
-                img.src = src;
-            });
-        }
+        // --- Event Listener for File Input ---
+        imageLoader.addEventListener('change', handleImageUpload);
 
         /**
-         * Handles the file input change event.
+         * Handles the file selection, validation, and initiates the image processing.
+         * @param {Event} e - The change event from the file input.
          */
-        function handleImage(e) {
+        function handleImageUpload(e) {
+            hideError();
             const file = e.target.files[0];
-            if (!file) {
-                return; // Exit if no file is selected
+            if (!file) return;
+
+            // --- File Type Validation ---
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                showError('Invalid file type. Please upload a PNG or JPEG image.');
+                return;
             }
 
-            loadingIndicator.style.display = 'block'; // Show loading indicator
-            canvasContainer.style.display = 'none';
-            downloadContainer.style.display = 'none';
-
-
             const reader = new FileReader();
-            
-            // This runs after the file has been read into memory
             reader.onload = function(event) {
-                const userImageSrc = event.target.result;
-
-                // Use Promise.all to wait for BOTH images to load before proceeding
-                Promise.all([
-                    loadImage(userImageSrc),
-                    loadImage(blushLogoSrc)
-                ])
-                .then(([userImage, logoImage]) => {
-                    // This block runs ONLY when both images are fully loaded
-                    drawCanvas(userImage, logoImage);
-                })
-                .catch(error => {
-                    console.error("Error loading one of the images:", error);
-                    loadingIndicator.innerText = 'Sorry, there was an error loading the image.';
-                });
-            };
-            
-            // Start reading the selected file
+                const userImage = new Image();
+                userImage.onload = function() {
+                    instruction.classList.add('hidden'); // Hide instruction text
+                    processImage(userImage);
+                    downloadContainer.classList.remove('hidden'); // Show download button
+                }
+                userImage.src = event.target.result;
+            }
             reader.readAsDataURL(file);
         }
-        
+
         /**
-         * Draws everything onto the canvas.
+         * Draws the user image, logo, and text onto the canvas.
+         * @param {HTMLImageElement} userImage - The user's uploaded image object.
          */
-        function drawCanvas(userImage, logoImage) {
-            // Set canvas dimensions to match the user's uploaded image
+        function processImage(userImage) {
+            // --- Set Canvas Dimensions to Match User Image ---
             canvas.width = userImage.width;
             canvas.height = userImage.height;
 
-            // Clear any previous drawings
+            // --- Clear canvas and draw user's image ---
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw user's image
             ctx.drawImage(userImage, 0, 0);
 
-            // Get average color to determine a complementary color for text
-            const avgColor = getAverageColor(userImage);
-            const complementaryColor = getComplementaryColor(avgColor.r, avgColor.g, avgColor.b);
-            
-            // --- Draw Blush Logo ---
-            const logoWidth = canvas.width * 0.2;
-            const logoHeight = logoImage.height * (logoWidth / logoImage.width);
-            const logoX = canvas.width - logoWidth - (canvas.width * 0.05);
-            const logoY = canvas.height - logoHeight - (canvas.height * 0.05);
-            ctx.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight);
+            // --- Artistic Placement of 'blush' Logo ---
+            // We wait for the logo to be fully loaded before trying to draw it
+            if (blushLogo.complete) {
+                drawOverlays();
+            } else {
+                blushLogo.onload = drawOverlays;
+            }
+        }
 
-            // --- Draw "JUNE 2025" Text ---
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = `bold ${canvas.width * 0.04}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.shadowColor = 'rgba(0,0,0,0.7)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-            const textY = canvas.height * 0.05;
-            ctx.fillText("JUNE 2025", canvas.width / 2, textY);
+        /**
+         * Draws the logo and text overlays. This function is called after the main image and logo are loaded.
+         */
+        function drawOverlays() {
+            // --- Draw the Blush Logo ---
+            // Scale logo to be 1/4th of the canvas width for good proportions
+            const logoScaleFactor = 4;
+            const logoWidth = canvas.width / logoScaleFactor;
+            const logoHeight = (logoWidth / blushLogo.width) * blushLogo.height;
             
-            // --- Draw "blush" Text with complementary color ---
-            ctx.fillStyle = complementaryColor; 
-            ctx.font = `bold ${canvas.width * 0.05}px Arial`;
+            // Random position, ensuring the logo stays fully within the canvas bounds.
+            const logoX = Math.random() * (canvas.width - logoWidth);
+            const logoY = Math.random() * (canvas.height - logoHeight);
+            
+            ctx.globalAlpha = 0.85; // Make the logo slightly transparent
+            ctx.drawImage(blushLogo, logoX, logoY, logoWidth, logoHeight);
+            ctx.globalAlpha = 1.0; // Reset alpha for other elements
+
+            // --- Draw "JUNE 2025" Text Randomly ---
+            const fontSize = Math.max(20, Math.min(canvas.width / 15, canvas.height / 15)); // Responsive font size
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-            // Reset shadow before drawing this text
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'; // Add a subtle shadow for readability
+            ctx.shadowBlur = 10;
+
+            // Add the text multiple times for an artistic effect
+            const textToDraw = "JUNE 2025";
+            for (let i = 0; i < 3; i++) {
+                // Random position within canvas bounds
+                const textX = Math.random() * canvas.width;
+                const textY = Math.random() * canvas.height;
+                ctx.fillText(textToDraw, textX, textY);
+            }
+            
+            // Reset shadow for any future drawing
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            const textYBlush = canvas.height - (canvas.height * 0.05);
-            ctx.fillText("blush", canvas.width / 2, textYBlush);
-
-            // --- Finalize ---
-            loadingIndicator.style.display = 'none'; // Hide loading indicator
-            canvasContainer.style.display = 'block';
-            downloadContainer.style.display = 'block';
-            downloadLnk.href = canvas.toDataURL('image/png');
-        }
-        
-        /**
-         * Calculates the average color of an image.
-         */
-        function getAverageColor(img) {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 1;
-            tempCanvas.height = 1;
-            tempCtx.drawImage(img, 0, 0, 1, 1);
-            const data = tempCtx.getImageData(0, 0, 1, 1).data;
-            return { r: data[0], g: data[1], b: data[2] };
         }
 
+
+        // --- Event Listener for Download Button ---
+        downloadBtn.addEventListener('click', function() {
+            // Create a temporary link element
+            const link = document.createElement('a');
+            // Set the filename for the download
+            link.download = 'blush-creation.png';
+            // Convert canvas content to a data URL (PNG format)
+            link.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+            // Programmatically click the link to trigger the download
+            link.click();
+        });
+
         /**
-         * Calculates a simple complementary color.
+         * Displays the error message box.
+         * @param {string} msg - The error message to display.
          */
-        function getComplementaryColor(r, g, b) {
-            return `rgb(${255 - r}, ${255 - g}, ${255 - b})`;
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorBox.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the error message box.
+         */
+        function hideError() {
+            errorBox.classList.add('hidden');
         }
 
     </script>
