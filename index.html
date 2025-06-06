@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>blush</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .btn {
+            border: 2px solid #4a90e2;
+            color: #4a90e2;
+            background-color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-btn-wrapper:hover .btn {
+            background-color: #4a90e2;
+            color: white;
+        }
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        #canvas-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: none; /* Initially hidden */
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 text-center">
+
+        <header class="mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">blush</h1>
+            <p class="text-lg text-gray-600 mt-2">2025</p>
+        </header>
+
+        <!-- File Uploader -->
+        <div class="upload-btn-wrapper">
+            <button class="btn">Choose an Image</button>
+            <input type="file" id="imageLoader" name="filename" accept="image/png, image/jpeg, image/gif">
+        </div>
+
+        <!-- Canvas and Download Link Container -->
+        <div id="canvas-container">
+            <canvas id="imageCanvas"></canvas>
+        </div>
+        
+        <div id="download-container" class="mt-6" style="display: none;">
+             <a id="downloadLnk" download="blush-image.png" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg">
+                Download Image
+            </a>
+        </div>
+        
+        <!-- Hidden Image for Blush Logo -->
+        <img id="blushLogo" src="" alt="Blush Logo" class="hidden">
+
+    </div>
+
+    <script>
+        const imageLoader = document.getElementById('imageLoader');
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const downloadLnk = document.getElementById('downloadLnk');
+        const canvasContainer = document.getElementById('canvas-container');
+        const downloadContainer = document.getElementById('download-container');
+        const blushLogo = document.getElementById('blushLogo');
+        
+        // Base64 encoded blush.png
+        const blushLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAbFBMVEUiAAD////d3d0fAADl5eUeAADz8/MhAADg4OAaAADt7e0TAADk5OQZAADZ2dkQAADW1tYMAADR0dEJAADJyckGAADExMQAwMDAAAAFAAD////+/v4BAACsrKxubm5LS0tCQkIAACOUlJRERERAQEB4eHhiYmJ+fn5paWlYWFhQUFB9x0BlAAAAAXRSTlMAQObYZgAAAwVJREFUeNrt3G1TwkAYB/CUWqK2QrGgKKjYirVoUVx7/1d0JCEDyEAmc/LOl/eE/2nCZCbdBSgAAAAAAAAAAAAAAAAAAAAAAAAAAMAvpGz52BH3JCKPz7i+9e85G/r+Z+w/iYh7kLzE9yQij99Z+0+S3v/ZGBWpG5Nf5+Z5D3I+u/dNk+4/M/+YZyLy+MvYPybZ/zP2n0lE3I8Uf7P+n4nIo+82Iu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+w8iIu5H8lH7jyT+bTb2j0n3n9k/IuL+M/afSWf9n7F/JJH3M/afSeqv/Xl/8+T+WbL5WjH3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPjVX/4aBCTN1G15AAAAAElFTkSuQmCC';
+        blushLogo.src = blushLogoSrc;
+
+        // Listener for the file input
+        imageLoader.addEventListener('change', handleImage, false);
+
+        function handleImage(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const userImage = new Image();
+                userImage.onload = function() {
+                    // Once user image is loaded, ensure blush logo is also loaded
+                    if (blushLogo.complete) {
+                        drawCanvas(userImage, blushLogo);
+                    } else {
+                        blushLogo.onload = function() {
+                            drawCanvas(userImage, blushLogo);
+                        }
+                    }
+                }
+                userImage.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+        
+        function drawCanvas(userImage, logoImage) {
+            // Set canvas dimensions to match the user's uploaded image
+            canvas.width = userImage.width;
+            canvas.height = userImage.height;
+
+            // Clear any previous drawings
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw user's image
+            ctx.drawImage(userImage, 0, 0);
+
+            // Get average color to determine a complementary color for text
+            const avgColor = getAverageColor(userImage);
+            const complementaryColor = getComplementaryColor(avgColor.r, avgColor.g, avgColor.b);
+            
+            // --- Draw Blush Logo ---
+            // Scale logo to be 20% of the image width
+            const logoWidth = canvas.width * 0.2;
+            const logoHeight = logoImage.height * (logoWidth / logoImage.width); // maintain aspect ratio
+            const logoX = canvas.width - logoWidth - (canvas.width * 0.05); // 5% margin from right
+            const logoY = canvas.height - logoHeight - (canvas.height * 0.05); // 5% margin from bottom
+            ctx.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight);
+
+            // --- Draw "JUNE 2025" Text ---
+            ctx.fillStyle = '#FFFFFF'; // White color for the date
+            ctx.font = `bold ${canvas.width * 0.04}px Arial`; // Font size relative to image width
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            // Add a subtle shadow for better readability
+            ctx.shadowColor = 'rgba(0,0,0,0.7)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            const textY = canvas.height * 0.05; // 5% from top
+            ctx.fillText("JUNE 2025", canvas.width / 2, textY);
+            
+             // --- Draw "blush" Text with complementary color ---
+            ctx.fillStyle = complementaryColor; 
+            ctx.font = `bold ${canvas.width * 0.05}px Arial`; // Font size relative to image width
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            const textYBlush = canvas.height - (canvas.height * 0.05); // 5% from bottom
+            ctx.fillText("blush", canvas.width / 2, textYBlush);
+
+
+            // Reset shadow for subsequent drawings
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Make canvas and download link visible
+            canvasContainer.style.display = 'block';
+            downloadContainer.style.display = 'block';
+            
+            // Set download link
+            downloadLnk.href = canvas.toDataURL('image/png');
+        }
+        
+        function getAverageColor(img) {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            // Make temp canvas tiny to get a good average color
+            tempCanvas.width = 1;
+            tempCanvas.height = 1;
+            tempCtx.drawImage(img, 0, 0, 1, 1);
+            
+            const data = tempCtx.getImageData(0, 0, 1, 1).data;
+            return { r: data[0], g: data[1], b: data[2] };
+        }
+
+        function getComplementaryColor(r, g, b) {
+            // Simple inversion for complementary color
+            return `rgb(${255 - r}, ${255 - g}, ${255 - b})`;
+        }
+
+    </script>
+</body>
+</html>
