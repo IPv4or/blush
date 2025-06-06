@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>blush</title>
+    <title>Image Blender</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter -->
@@ -64,8 +64,8 @@
     <div class="container mx-auto p-4 md:p-8 text-center">
 
         <header class="mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">blush</h1>
-            <p class="text-lg text-gray-600 mt-2">2025</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Image Blender</h1>
+            <p class="text-lg text-gray-600 mt-2">Upload your picture to add a creative touch!</p>
         </header>
 
         <!-- File Uploader -->
@@ -85,9 +85,6 @@
             </a>
         </div>
         
-        <!-- Hidden Image for Blush Logo -->
-        <img id="blushLogo" src="" alt="Blush Logo" class="hidden">
-
     </div>
 
     <script>
@@ -97,31 +94,44 @@
         const downloadLnk = document.getElementById('downloadLnk');
         const canvasContainer = document.getElementById('canvas-container');
         const downloadContainer = document.getElementById('download-container');
-        const blushLogo = document.getElementById('blushLogo');
         
-        // Base64 encoded blush.png
+        // Base64 encoded blush.png is stored directly in a constant
         const blushLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAbFBMVEUiAAD////d3d0fAADl5eUeAADz8/MhAADg4OAaAADt7e0TAADk5OQZAADZ2dkQAADW1tYMAADR0dEJAADJyckGAADExMQAwMDAAAAFAAD////+/v4BAACsrKxubm5LS0tCQkIAACOUlJRERERAQEB4eHhiYmJ+fn5paWlYWFhQUFB9x0BlAAAAAXRSTlMAQObYZgAAAwVJREFUeNrt3G1TwkAYB/CUWqK2QrGgKKjYirVoUVx7/1d0JCEDyEAmc/LOl/eE/2nCZCbdBSgAAAAAAAAAAAAAAAAAAAAAAAAAAMAvpGz52BH3JCKPz7i+9e85G/r+Z+w/iYh7kLzE9yQij99Z+0+S3v/ZGBWpG5Nf5+Z5D3I+u/dNk+4/M/+YZyLy+MvYPybZ/zP2n0lE3I8Uf7P+n4nIo+82Iu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+48iIu5H8rD/z9g/Jt3/lP1nIvL42w2IuB/J+k8S/zZr/5kU/9n+T5Le/zn7TyIi7kfysP/P2D8m3f+U/Wci8vjbDYi4H8n6TxL/Nmv/mRT/2f5Pkt7/OfuPIiLuR/Kw/8/YPybd/5T9ZyLy+NsNiLgfyfpPEv82a/+ZFP/Z/k+S3v85+w8iIu5H8lH7jyT+bTb2j0n3n9k/IuL+M/afSWf9n7F/JJH3M/afSeqv/Xl/8+T+WbL5WjH3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPjVX/4aBCTN1G15AAAAAElFTkSuQmCC';
-        blushLogo.src = blushLogoSrc;
 
         // Listener for the file input
         imageLoader.addEventListener('change', handleImage, false);
 
         function handleImage(e) {
+            // Ensure a file was selected
+            if (!e.target.files || !e.target.files[0]) {
+                return;
+            }
+
             const reader = new FileReader();
+            
+            // This event fires when the file is read into memory
             reader.onload = function(event) {
                 const userImage = new Image();
+                
+                // This event fires when the user's image has been loaded
                 userImage.onload = function() {
-                    // Once user image is loaded, ensure blush logo is also loaded
-                    if (blushLogo.complete) {
-                        drawCanvas(userImage, blushLogo);
-                    } else {
-                        blushLogo.onload = function() {
-                            drawCanvas(userImage, blushLogo);
-                        }
-                    }
-                }
+                    // Now that the user's image is loaded, create and load the logo
+                    const logoImage = new Image();
+
+                    // This event fires when the logo image has been loaded
+                    logoImage.onload = function() {
+                        // CRITICAL: Both images are now fully loaded and ready.
+                        // We can now safely draw everything to the canvas.
+                        drawCanvas(userImage, logoImage);
+                    };
+                    // Set the source for the logo to start loading it
+                    logoImage.src = blushLogoSrc;
+                };
+                // Set the source for the user image to start loading it
                 userImage.src = event.target.result;
             }
+            
+            // Start reading the user's selected file
             reader.readAsDataURL(e.target.files[0]);
         }
         
@@ -167,11 +177,16 @@
             ctx.font = `bold ${canvas.width * 0.05}px Arial`; // Font size relative to image width
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
+            // Reset shadow before drawing this text
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
             const textYBlush = canvas.height - (canvas.height * 0.05); // 5% from bottom
             ctx.fillText("blush", canvas.width / 2, textYBlush);
 
 
-            // Reset shadow for subsequent drawings
+            // Reset shadow for any subsequent drawings
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
